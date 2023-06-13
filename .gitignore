@@ -1,0 +1,6 @@
+yolov8l.pt
+yolov8n-cls.pt
+yolov8n-pose.pt
+yolov8n-seg.pt
+
+.venv/
