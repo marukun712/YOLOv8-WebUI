@@ -1,10 +1,6 @@
 @echo off
 cd /d %~dp0    
 
-echo Installing requirements...
+echo Launching app...
 
-pip install ultralytics gradio
-
-echo Launching app.py...
-
-python app.py
+python launch.py

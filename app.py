@@ -17,49 +17,35 @@ def return_options(checkbox):
 
     return option
 
-#物体検出
-def detect(input,checkbox,conf,iou):
-    option = return_options(checkbox)
+#結果を描画する
+def plot(res):
+    plot = res[0].plot()
+    return plot
 
+def inference(type,input,checkbox,conf,iou,device,max_det,line_width,cpu):  
+    if(type == "detect"):
+        model = detect_model
+    elif(type == "seg"):
+        model = seg_model
+    elif(type == "cls"):
+        model = cls_model
+    elif(type == "pose"):
+        model = pose_model
+
+    if(cpu):
+        device = "cpu"
+
+    if not(line_width):
+        line_width = None
+
+    option = return_options(checkbox)
+    
     #物体検出を実行
-    res = detect_model(input,conf=conf,iou=iou,**option)
+    res = model(input,conf=conf,iou=iou,device=device,max_det=max_det,line_width=line_width,**option)
 
     #結果を描画
-    res_plotted = res[0].plot()
-    return res_plotted
-
-#インスタンスセグメンテーション
-def seg(input,checkbox,conf,iou):
-    option = return_options(checkbox)
-
-    #インスタンスセグメンテーションを実行
-    res = seg_model(input,conf=conf,iou=iou,**option)
-
-    #結果を描画
-    res_plotted = res[0].plot()
-    return res_plotted
-
-#画像分類
-def cls(input,checkbox,conf,iou):
-    option = return_options(checkbox)
-
-    #画像分類を実行
-    res = cls_model(input,conf=conf,iou=iou,**option)
-
-    #結果を描画
-    res_plotted = res[0].plot()
-    return res_plotted
-
-#姿勢推定
-def pose(input,checkbox,conf,iou):
-    option = return_options(checkbox)
-
-    #姿勢推定を実行
-    res = pose_model(input,conf=conf,iou=iou,**option)
-
-    #結果を描画
-    res_plotted = res[0].plot()
-    return res_plotted
+    plotted = plot(res)
+    return plotted
 
 with gr.Blocks() as app:
     #ヘッダー
@@ -67,50 +53,28 @@ with gr.Blocks() as app:
 
     #タブ
     with gr.Tabs():
-        #Detectタブ
-        with gr.TabItem("Detect"):
+        #inferenceタブ
+        with gr.TabItem("inference"):
             with gr.Row():
-                detect_input = gr.Image()
-                detect_output = gr.Image()
-            detect_button = gr.Button("inference")
+                input = gr.Image()
+                output = gr.Image()
 
-        #Segmentタブ
-        with gr.TabItem("Segment"):
-            with gr.Row():
-                seg_input = gr.Image()
-                seg_output = gr.Image()
-            seg_button = gr.Button("inference")
+            type = gr.Radio(["detect", "seg", "cls", "pose"], value="detect", label="Tasks")
 
-        #Classifyタブ
-        with gr.TabItem("Classify"):
-            with gr.Row():
-                cls_input = gr.Image()
-                cls_output = gr.Image()
-            cls_button = gr.Button("inference")
+            #オプション 
+            conf = gr.Slider(minimum=0, maximum=1, value=0.25, step=0.01, interactive=True,label="conf")
+            iou = gr.Slider(minimum=0, maximum=1, value=0.7, step=0.01, interactive=True,label="iou")
+            checkbox = gr.CheckboxGroup(["half","show","save","save_txt","save_conf","save_crop","hide_labels","hide_conf","vid_stride","visualize","augment","agnostic_nms","retina_masks","boxes"], label="Options",value=["boxes"])
 
-        #Poseタブ
-        with gr.TabItem("Pose"):
-            with gr.Row():
-                pose_input = gr.Image()
-                pose_output = gr.Image()
-            pose_button = gr.Button("inference")
+            device = gr.Number(value=0, label="device", interactive=True, precision=0)
+            cpu = gr.Checkbox(label="cpu", interactive=True)
+            max_det = gr.Number(value=300, label="max_det", interactive=True, precision=0)
+            line_width = gr.Number(value=0, label="line_width", interactive=True, precision=0)
 
-    #オプション
-    conf = gr.Slider(minimum=0, maximum=1, value=0.25, step=0.01, interactive=True,label="conf")
-    iou = gr.Slider(minimum=0, maximum=1, value=0.7, step=0.01, interactive=True,label="iou")
-    checkbox = gr.CheckboxGroup(["half","show","save","save_txt","save_conf","save_crop","hide_labels","hide_conf","vid_stride","visualize","augment","agnostic_nms","retina_masks","boxes"], label="Options",value=["boxes"])
+            inference_button = gr.Button("inference")
 
-    #detect_inputから画像を取得してdetect関数を実行
-    detect_button.click(detect, inputs=[detect_input,checkbox,conf,iou], outputs=detect_output)
+        with gr.TabItem("train"):
+            gr.Markdown("# TODO")
 
-    #seg_inputから画像を取得してdetect関数を実行
-    seg_button.click(seg, inputs=[seg_input,checkbox,conf,iou], outputs=seg_output)
-
-    #cls_inputから画像を取得してdetect関数を実行
-    cls_button.click(cls, inputs=[cls_input,checkbox,conf,iou], outputs=cls_output)
-
-    #pose_inputから画像を取得してpose関数を実行
-    pose_button.click(pose, inputs=[pose_input,checkbox,conf,iou], outputs=pose_output)
-
-#起動
-app.launch()
+    #inputから画像を取得してdetect関数を実行
+    inference_button.click(inference, inputs=[type,input,checkbox,conf,iou,device,max_det,line_width,cpu], outputs=output)
