@@ -3,4 +3,6 @@ yolov8n-cls.pt
 yolov8n-pose.pt
 yolov8n-seg.pt
 
+_pychache_
+
 .venv/
