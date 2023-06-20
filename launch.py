@@ -1,6 +1,5 @@
 import importlib.util
 import pip
-import app 
 import sys
 
 #パッケージがインストールされているかの確認
@@ -28,6 +27,8 @@ def start():
         print("Installing ultralytics")
         pip.main(['install','ultralytics'])
 
+    import app 
+    
     #appを起動
     app.app.launch()
 
